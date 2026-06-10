@@ -26,13 +26,10 @@ contract DeployIndexerRegistry is ScaffoldETHDeploy {
     address constant UNI_V3_FACTORY = 0x33128a8fC17869897dcE68Ed026d694621f6FDfD;
 
     function run() external ScaffoldEthDeployerRunner {
-        address pool = IUniswapV3Factory(UNI_V3_FACTORY).getPool(CLAWD, USDC, 3000);
-        if (pool == address(0)) {
-            pool = IUniswapV3Factory(UNI_V3_FACTORY).getPool(CLAWD, USDC, 500);
-        }
-        if (pool == address(0)) {
-            pool = IUniswapV3Factory(UNI_V3_FACTORY).getPool(CLAWD, USDC, 10000);
-        }
+        // Deepest-liquidity pool is 1% fee tier (10000) — verified on-chain 2026-06-10
+        // cast call 0x33128a8fC17869897dcE68Ed026d694621f6FDfD "getPool(address,address,uint24)(address)" CLAWD USDC 10000
+        // Result: 0xb72A6e1091D43e19284050b7132e0646509EBa5d (liquidity: 3.338e16 vs 0 for 3000 tier)
+        address pool = 0xb72A6e1091D43e19284050b7132e0646509EBa5d;
 
         IndexerRegistry registry = new IndexerRegistry(USDC, CLAWD, TREASURY, ROUTER, pool);
 

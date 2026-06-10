@@ -1,19 +1,17 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
 import type { NextPage } from "next";
 import { formatUnits } from "viem";
 import { base } from "viem/chains";
-import { useAccount, useReadContract, useSwitchChain } from "wagmi";
+import { useAccount, useSwitchChain } from "wagmi";
 import { ClientOnly } from "~~/components/ClientOnly";
 import deployedContracts from "~~/contracts/deployedContracts";
-import externalContracts from "~~/contracts/externalContracts";
 import { useScaffoldEventHistory, useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { notification } from "~~/utils/scaffold-eth";
 
 const REGISTRY_ADDRESS = deployedContracts[8453].IndexerRegistry.address as `0x${string}`;
-const USDC_ADDRESS = externalContracts[8453].USDC.address as `0x${string}`;
-const USDC_ABI = externalContracts[8453].USDC.abi;
 
 const isHexBytes32 = (value: string): value is `0x${string}` => /^0x[0-9a-fA-F]{64}$/.test(value);
 
@@ -37,6 +35,7 @@ const formatCountdown = (seconds: number) => {
 const DisputesInner = () => {
   const { address: connectedAddress, chain } = useAccount();
   const { switchChain } = useSwitchChain();
+  const { openConnectModal } = useConnectModal();
 
   const [regIdInput, setRegIdInput] = useState<string>("");
   const [claimHashInput, setClaimHashInput] = useState<string>("");
@@ -94,12 +93,10 @@ const DisputesInner = () => {
     return baseAmount * mult;
   }, [lookupBoost, counterStakeBps, multiplier]);
 
-  const { data: allowance, refetch: refetchAllowance } = useReadContract({
-    address: USDC_ADDRESS,
-    abi: USDC_ABI,
+  const { data: allowance, refetch: refetchAllowance } = useScaffoldReadContract({
+    contractName: "USDC",
     functionName: "allowance",
-    args: connectedAddress ? [connectedAddress, REGISTRY_ADDRESS] : undefined,
-    chainId: base.id,
+    args: [connectedAddress, REGISTRY_ADDRESS],
     query: { enabled: !!connectedAddress },
   });
 
@@ -300,7 +297,7 @@ const DisputesInner = () => {
 
           <div className="card-actions justify-end mt-4">
             {!connectedAddress ? (
-              <button className="btn btn-primary" disabled>
+              <button className="btn btn-primary" onClick={() => openConnectModal?.()}>
                 Connect Wallet
               </button>
             ) : wrongNetwork ? (
