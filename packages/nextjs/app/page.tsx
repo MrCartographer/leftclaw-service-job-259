@@ -1,73 +1,219 @@
 "use client";
 
+import { useMemo } from "react";
 import Link from "next/link";
-import { Address } from "@scaffold-ui/components";
 import type { NextPage } from "next";
+import { formatUnits } from "viem";
 import { useAccount } from "wagmi";
-import { BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import { useTargetNetwork } from "~~/hooks/scaffold-eth";
+import { ClientOnly } from "~~/components/ClientOnly";
+import { Address } from "~~/components/scaffold-eth";
+import { useScaffoldEventHistory, useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 
-const Home: NextPage = () => {
+const truncate = (value: string, head = 8, tail = 6) =>
+  value.length > head + tail + 2 ? `${value.slice(0, head)}…${value.slice(-tail)}` : value;
+
+const formatUSDC = (raw?: bigint) => {
+  if (raw === undefined) return "$0.00";
+  const n = Number(formatUnits(raw, 6));
+  return n.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 2 });
+};
+
+type RegRow = {
+  regId: string;
+  indexer: string;
+  target: string;
+  eventSig: string;
+  boost: bigint;
+};
+
+const HomeInner = () => {
   const { address: connectedAddress } = useAccount();
-  const { targetNetwork } = useTargetNetwork();
+
+  const { data: registeredEvents, isLoading: regLoading } = useScaffoldEventHistory({
+    contractName: "IndexerRegistry",
+    eventName: "Registered",
+    fromBlock: 0n,
+    watch: true,
+  });
+
+  const { data: deregisteredEvents } = useScaffoldEventHistory({
+    contractName: "IndexerRegistry",
+    eventName: "Deregistered",
+    fromBlock: 0n,
+    watch: true,
+  });
+
+  const { data: buybackReserve } = useScaffoldReadContract({
+    contractName: "IndexerRegistry",
+    functionName: "buybackReserveUSDC",
+  });
+
+  const deregisteredSet = useMemo(() => {
+    const set = new Set<string>();
+    deregisteredEvents?.forEach(e => {
+      const regId = (e.args as { regId?: string })?.regId;
+      if (regId) set.add(regId.toLowerCase());
+    });
+    return set;
+  }, [deregisteredEvents]);
+
+  const activeRegs: RegRow[] = useMemo(() => {
+    if (!registeredEvents) return [];
+    const rows: RegRow[] = [];
+    for (const ev of registeredEvents) {
+      const args = ev.args as {
+        regId?: string;
+        indexer?: string;
+        target?: string;
+        eventSig?: string;
+        boost?: bigint;
+      };
+      if (!args.regId || deregisteredSet.has(args.regId.toLowerCase())) continue;
+      rows.push({
+        regId: args.regId,
+        indexer: args.indexer ?? "",
+        target: args.target ?? "",
+        eventSig: args.eventSig ?? "",
+        boost: args.boost ?? 0n,
+      });
+    }
+    return rows;
+  }, [registeredEvents, deregisteredSet]);
+
+  const totalStaked = useMemo(() => activeRegs.reduce((acc, r) => acc + (r.boost ?? 0n), 0n), [activeRegs]);
+
+  const myRegs = useMemo(() => {
+    if (!connectedAddress) return [];
+    return activeRegs.filter(r => r.indexer.toLowerCase() === connectedAddress.toLowerCase());
+  }, [activeRegs, connectedAddress]);
 
   return (
     <>
-      <div className="flex items-center flex-col grow pt-10">
-        <div className="px-5">
-          <h1 className="text-center">
-            <span className="block text-2xl mb-2">Welcome to</span>
-            <span className="block text-4xl font-bold">Scaffold-ETH 2</span>
-          </h1>
-          <div className="flex justify-center items-center space-x-2 flex-col">
-            <p className="my-2 font-medium">Connected Address:</p>
-            <Address address={connectedAddress} chain={targetNetwork} />
-          </div>
-
-          <p className="text-center text-lg">
-            Get started by editing{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              packages/nextjs/app/page.tsx
-            </code>
-          </p>
-          <p className="text-center text-lg">
-            Edit your smart contract{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              YourContract.sol
-            </code>{" "}
-            in{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              packages/hardhat/contracts
-            </code>
-          </p>
+      <div className="stats stats-vertical lg:stats-horizontal shadow w-full mb-8 bg-base-100">
+        <div className="stat">
+          <div className="stat-title">Active Registrations</div>
+          <div className="stat-value text-primary">{activeRegs.length}</div>
+          <div className="stat-desc">{regLoading ? "Loading events..." : "Live from Registered events"}</div>
         </div>
-
-        <div className="grow bg-base-300 w-full mt-16 px-8 py-12">
-          <div className="flex justify-center items-center gap-12 flex-col md:flex-row">
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <BugAntIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Tinker with your smart contract using the{" "}
-                <Link href="/debug" passHref className="link">
-                  Debug Contracts
-                </Link>{" "}
-                tab.
-              </p>
-            </div>
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <MagnifyingGlassIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Explore your local transactions with the{" "}
-                <Link href="/blockexplorer" passHref className="link">
-                  Block Explorer
-                </Link>{" "}
-                tab.
-              </p>
-            </div>
-          </div>
+        <div className="stat">
+          <div className="stat-title">Total Boost Staked</div>
+          <div className="stat-value">{formatUSDC(totalStaked)}</div>
+          <div className="stat-desc">Sum of active boost stakes</div>
+        </div>
+        <div className="stat">
+          <div className="stat-title">Buyback Reserve</div>
+          <div className="stat-value">{formatUSDC(buybackReserve as bigint | undefined)}</div>
+          <div className="stat-desc">USDC accumulated for CLAWD buyback</div>
         </div>
       </div>
+
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-2xl font-bold">Active Registrations</h2>
+        <Link href="/register" className="btn btn-primary btn-sm">
+          Register
+        </Link>
+      </div>
+
+      <div className="card bg-base-100 shadow overflow-x-auto">
+        <table className="table table-zebra">
+          <thead>
+            <tr>
+              <th>regId</th>
+              <th>Target Contract</th>
+              <th>Event Sig</th>
+              <th>Boost</th>
+              <th>Indexer</th>
+            </tr>
+          </thead>
+          <tbody>
+            {activeRegs.length === 0 && (
+              <tr>
+                <td colSpan={5} className="text-center text-base-content/60 py-8">
+                  {regLoading ? "Loading registrations..." : "No active registrations yet."}
+                </td>
+              </tr>
+            )}
+            {activeRegs.map(r => (
+              <tr key={r.regId}>
+                <td className="font-mono text-xs">{truncate(r.regId, 8, 6)}</td>
+                <td>
+                  <Address address={r.target as `0x${string}`} format="short" size="sm" />
+                </td>
+                <td className="font-mono text-xs">{truncate(r.eventSig, 10, 6)}</td>
+                <td>
+                  <span className="badge badge-ghost">{formatUSDC(r.boost)}</span>
+                </td>
+                <td>
+                  <Address address={r.indexer as `0x${string}`} format="short" size="sm" />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {connectedAddress && (
+        <div className="mt-10">
+          <h2 className="text-2xl font-bold mb-3">Your Registrations</h2>
+          <div className="card bg-base-100 shadow overflow-x-auto">
+            <table className="table table-zebra">
+              <thead>
+                <tr>
+                  <th>regId</th>
+                  <th>Target Contract</th>
+                  <th>Event Sig</th>
+                  <th>Boost</th>
+                </tr>
+              </thead>
+              <tbody>
+                {myRegs.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="text-center text-base-content/60 py-6">
+                      You have no active registrations.{" "}
+                      <Link href="/register" className="link">
+                        Create one
+                      </Link>
+                      .
+                    </td>
+                  </tr>
+                )}
+                {myRegs.map(r => (
+                  <tr key={r.regId}>
+                    <td className="font-mono text-xs">{truncate(r.regId, 8, 6)}</td>
+                    <td>
+                      <Address address={r.target as `0x${string}`} format="short" size="sm" />
+                    </td>
+                    <td className="font-mono text-xs">{truncate(r.eventSig, 10, 6)}</td>
+                    <td>
+                      <span className="badge badge-ghost">{formatUSDC(r.boost)}</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </>
+  );
+};
+
+const Home: NextPage = () => {
+  return (
+    <div className="flex flex-col grow w-full">
+      <div className="px-4 lg:px-8 py-10 max-w-7xl mx-auto w-full">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold mb-2">IndexerRegistry</h1>
+          <p className="text-base-content/70">
+            Permissionless event indexers on Base. Indexers stake USDC to register{" "}
+            <code className="text-sm">(targetContract, eventSig)</code> pairs and serve queries.
+          </p>
+        </div>
+        <ClientOnly fallback={<div className="skeleton h-32 w-full" />}>
+          <HomeInner />
+        </ClientOnly>
+      </div>
+    </div>
   );
 };
 

@@ -51,6 +51,10 @@ if (typeof globalThis.window === "undefined") {
       innerHTML: "",
       textContent: "",
       data: "",
+      // Next.js `shared/lib/deployment-id.js` reads `document.documentElement.dataset.dplId`
+      // when `typeof window !== "undefined"`, which trips on this polyfill unless we
+      // provide an empty `dataset` map for fake elements.
+      dataset: {},
     };
     return el;
   };

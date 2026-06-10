@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <rect width="64" height="64" rx="10" fill="#0052FF"/>
+  <path d="M16 12 H40 L48 20 V52 H16 Z" fill="#ffffff" stroke="#0040c8" stroke-width="1.5" stroke-linejoin="round"/>
+  <path d="M40 12 V20 H48" fill="none" stroke="#0040c8" stroke-width="1.5" stroke-linejoin="round"/>
+  <text x="32" y="42" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="16" fill="#0052FF">IR</text>
+</svg>
