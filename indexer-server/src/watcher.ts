@@ -1,6 +1,6 @@
 import { parseAbiItem, type Address, type Hex } from "viem";
 import { publicClient } from "./chain.js";
-import { CLAWD, config } from "./config.js";
+import { config, SYMBOL, TOKEN } from "./config.js";
 
 const transferEvent = parseAbiItem(
   "event Transfer(address indexed from, address indexed to, uint256 value)",
@@ -19,7 +19,7 @@ const CHUNK = 9_000n;
 const POLL_MS = 12_000;
 
 /**
- * In-memory rolling index of CLAWD Transfer events. Backfills `backfillBlocks`
+ * In-memory rolling index of the configured token's Transfer events. Backfills `backfillBlocks`
  * at boot (chunked to respect getLogs limits), then polls for new blocks and
  * prunes anything that falls out of the window. The store is a cache over the
  * canonical chain — a reboot rebuilds it identically, so there is nothing to
@@ -66,7 +66,7 @@ class TransferStore {
       this.backfillProgress = Math.min(99, Math.round((Number(end - this.windowStart) / total) * 100));
     }
     this.ready = true;
-    console.log(`[watcher] backfill complete: ${this.events.length} CLAWD transfers over ${config.backfillBlocks} blocks`);
+    console.log(`[watcher] backfill complete: ${this.events.length} ${SYMBOL} transfers over ${config.backfillBlocks} blocks`);
 
     this.poll();
   }
@@ -89,7 +89,7 @@ class TransferStore {
 
   private async ingest(fromBlock: bigint, toBlock: bigint) {
     const logs = await publicClient.getLogs({
-      address: CLAWD,
+      address: TOKEN,
       event: transferEvent,
       fromBlock,
       toBlock,

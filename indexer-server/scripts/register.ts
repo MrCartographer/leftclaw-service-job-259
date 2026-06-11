@@ -1,5 +1,8 @@
 /**
- * One-time on-chain registration of (CLAWD, Transfer) for this indexer node.
+ * One-time on-chain registration of (TOKEN, Transfer) for this indexer node.
+ *
+ * Defaults to CLAWD; set TOKEN_ADDRESS (and TOKEN_SYMBOL) to register another
+ * token, e.g. TOKEN_ADDRESS=0x5F09… TOKEN_SYMBOL=DOTA.
  *
  * Run with the INDEXER's key (not the Railway submitter key — the indexer key
  * never needs to leave the machine you run this from):
@@ -18,7 +21,7 @@ import "dotenv/config";
 import { createPublicClient, createWalletClient, erc20Abi, formatUnits, http, parseAbi, type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { base } from "viem/chains";
-import { CLAWD, USDC } from "../src/config.js";
+import { SYMBOL, TOKEN, USDC } from "../src/config.js";
 import { TRANSFER_TOPIC } from "../src/abi.js";
 import { computeRegId } from "../src/registry.js";
 
@@ -49,8 +52,9 @@ async function waitFor(hash: Hex, label: string) {
 async function main() {
   console.log(`Registrar (indexer): ${account.address}`);
   console.log(`Contract: ${CONTRACT}`);
+  console.log(`Token: ${SYMBOL} ${TOKEN}`);
 
-  const regId = computeRegId(account.address, CLAWD, TRANSFER_TOPIC);
+  const regId = computeRegId(account.address, TOKEN, TRANSFER_TOPIC);
   console.log(`Expected regId: ${regId}`);
 
   const existing = await publicClient.readContract({
@@ -92,9 +96,9 @@ async function main() {
   }
 
   const hash = await walletClient.writeContract({
-    address: CONTRACT, abi: registrarAbi, functionName: "register", args: [CLAWD, TRANSFER_TOPIC, BOOST],
+    address: CONTRACT, abi: registrarAbi, functionName: "register", args: [TOKEN, TRANSFER_TOPIC, BOOST],
   });
-  await waitFor(hash, `register(CLAWD, Transfer, boost=$${formatUnits(BOOST, 6)})`);
+  await waitFor(hash, `register(${SYMBOL}, Transfer, boost=$${formatUnits(BOOST, 6)})`);
 
   const reg = await publicClient.readContract({
     address: CONTRACT, abi: registrarAbi, functionName: "registrations", args: [regId],

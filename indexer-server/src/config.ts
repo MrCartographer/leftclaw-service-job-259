@@ -12,7 +12,7 @@ export const config = {
   // Signs + submits settleQuery txs. Only needs ETH for gas — settleQuery is
   // permissionless, so this does NOT have to be the registered indexer wallet.
   submitterPrivateKey: required("SUBMITTER_PRIVATE_KEY") as Hex,
-  // The wallet that registered (CLAWD, Transfer) on-chain. The 98% indexer cut
+  // The wallet that registered (TOKEN, Transfer) on-chain. The 98% indexer cut
   // is paid here regardless of who submits the settlement.
   indexerAddress: getAddress(required("INDEXER_ADDRESS")),
   contract: getAddress(process.env.INDEXER_CONTRACT || "0x3be578A72d1c4ffDBB2AA2418a7fb749BCDBA313"),
@@ -21,7 +21,7 @@ export const config = {
   // Per-query fee for the raw /query endpoint. 10000 = $0.01 (on-chain minimum).
   queryFee: BigInt(process.env.QUERY_FEE || "10000"),
   settleOnchain: process.env.SETTLE_ONCHAIN === "1",
-  // How far back the CLAWD Transfer watcher backfills at boot.
+  // How far back the token Transfer watcher backfills at boot.
   // 302400 blocks ≈ 7 days at Base's 2s block time.
   backfillBlocks: BigInt(process.env.BACKFILL_BLOCKS || "302400"),
   port: Number(process.env.PORT || 8080),
@@ -32,6 +32,17 @@ export const config = {
 export const USDC = getAddress("0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913");
 export const CLAWD = getAddress("0x9f86dB9fc6f7c9408e8Fda3Ff8ce4e78ac7a6b07");
 export const DEAD = getAddress("0x000000000000000000000000000000000000dEaD");
+
+// The token this node indexes. Defaults to CLAWD so the original deployment
+// runs unchanged; set TOKEN_ADDRESS + TOKEN_SYMBOL to serve a different token
+// (e.g. DOTA 0x5F09821CBb61e09D2a83124Ae0B56aaa3ae85B07).
+export const TOKEN = getAddress(process.env.TOKEN_ADDRESS || CLAWD);
+export const SYMBOL = process.env.TOKEN_SYMBOL || "CLAWD";
+
+// Optional prize-pool watcher (BETRSponsoredPrizePool). When set, the server
+// indexes PrizeClaimed events from this contract and serves a Prizes question
+// category. Used by the DOTA node (0xfe8F003Cfa17442362d0F2c8F9C6dF9Bc410E5E3).
+export const PRIZE_POOL = process.env.PRIZE_POOL_ADDRESS ? getAddress(process.env.PRIZE_POOL_ADDRESS) : undefined;
 
 // Block-time arithmetic for time windows (Base: 2s blocks).
 export const BLOCKS_PER_DAY = 43_200n;

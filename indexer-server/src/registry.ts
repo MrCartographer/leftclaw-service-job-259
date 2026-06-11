@@ -1,5 +1,5 @@
 import { encodeAbiParameters, getAddress, keccak256, type Address, type Hex } from "viem";
-import { CLAWD, config } from "./config.js";
+import { config, TOKEN } from "./config.js";
 import { decodableEvents, type EventSig } from "./abi.js";
 
 /**
@@ -24,13 +24,13 @@ export type Registration = {
 };
 
 /**
- * What this server serves: CLAWD Transfer, registered on-chain by the indexer
- * wallet. regId is derived the same way the contract derives it, so consumers
- * can cross-check against the chain.
+ * What this server serves: the configured token's Transfer, registered
+ * on-chain by the indexer wallet. regId is derived the same way the contract
+ * derives it, so consumers can cross-check against the chain.
  */
 export const registrations: Registration[] = (Object.keys(decodableEvents) as EventSig[]).map(eventSig => ({
-  regId: computeRegId(config.indexerAddress, CLAWD, eventSig),
-  target: CLAWD,
+  regId: computeRegId(config.indexerAddress, TOKEN, eventSig),
+  target: TOKEN,
   eventSig,
   eventName: decodableEvents[eventSig].name,
 }));

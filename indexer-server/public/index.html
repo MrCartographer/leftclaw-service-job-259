@@ -180,7 +180,7 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="brand"><span class="mark"></span> CLAWD Answers <small>· clickable questions on Base</small></div>
+    <div class="brand"><span class="mark"></span> <span id="brandName">CLAWD Answers</span> <small>· clickable questions on Base</small></div>
     <div style="display:flex; gap:10px; align-items:center;">
       <span id="walletInfo" class="hint" style="display:none;"></span>
       <button id="themeBtn" class="btn icon" title="Toggle theme" aria-label="Toggle theme">◐</button>
@@ -191,7 +191,7 @@
   <section class="hero">
     <h1>Ask the chain.<br />10¢ a question.</h1>
     <p>
-      No chat box. No API key. Pick a question about <strong>$CLAWD</strong> below — each answer is computed
+      No chat box. No API key. Pick a question about <strong class="tokenSym">$CLAWD</strong> below — each answer is computed
       live from Base by a <a href="#how">staked permissionless indexer</a> and settled on-chain for
       <span class="price">$0.10 USDC</span>.
     </p>
@@ -217,9 +217,9 @@
     <div class="steps">
       <div class="step">
         <div class="n">01</div>
-        <h3>A staked indexer watches CLAWD</h3>
+        <h3>A staked indexer watches <span class="tokenSymPlain">CLAWD</span></h3>
         <p>An indexer staked USDC on the <strong>IndexerRegistry</strong> contract to register the
-        (CLAWD, <code>Transfer</code>) event pair. Wrong answers can be disputed and slashed — the stake is the bond.</p>
+        (<span class="tokenSymPlain">CLAWD</span>, <code>Transfer</code>) event pair. Wrong answers can be disputed and slashed — the stake is the bond.</p>
       </div>
       <div class="step">
         <div class="n">02</div>
@@ -231,7 +231,7 @@
         <div class="n">03</div>
         <h3>Settled on-chain, burned forever</h3>
         <p>The indexer submits your signature to <code>settleQuery</code>: 98% pays the indexer,
-        1% the protocol treasury, and 1% buys <strong>$CLAWD and burns it</strong>. Every question shrinks supply.</p>
+        1% the protocol treasury, and 1% buys <strong>$CLAWD and burns it</strong>. Every question shrinks CLAWD supply.</p>
       </div>
     </div>
   </section>
@@ -347,6 +347,13 @@
       cfg = { feeDisplay: "$0.10", questions: FALLBACK_QUESTIONS, offline: true };
       renderCards();
       return;
+    }
+    if (cfg.token?.symbol) {
+      const sym = cfg.token.symbol;
+      document.title = `${sym} Answers — ask the chain, 10¢ a question`;
+      $("brandName").textContent = `${sym} Answers`;
+      document.querySelectorAll(".tokenSym").forEach(el => (el.textContent = `$${sym}`));
+      document.querySelectorAll(".tokenSymPlain").forEach(el => (el.textContent = sym));
     }
     $("contractAddr").textContent = shorten(cfg.payment.payTo);
     $("contractLink").href = "https://basescan.org/address/" + cfg.payment.payTo;
