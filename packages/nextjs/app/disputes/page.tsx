@@ -106,7 +106,7 @@ const DisputesInner = () => {
   const { data: disputeOpenedEvents } = useScaffoldEventHistory({
     contractName: "IndexerRegistry",
     eventName: "DisputeOpened",
-    fromBlock: 0n,
+    fromBlock: 47165937n, // contract deploy block
     watch: true,
     blockData: true,
   });
@@ -114,7 +114,7 @@ const DisputesInner = () => {
   const { data: disputeResolvedEvents } = useScaffoldEventHistory({
     contractName: "IndexerRegistry",
     eventName: "DisputeResolved",
-    fromBlock: 0n,
+    fromBlock: 47165937n, // contract deploy block
     watch: true,
   });
 

@@ -44,14 +44,14 @@ const FindIndexers = () => {
   const { data: registeredEvents, isLoading } = useScaffoldEventHistory({
     contractName: "IndexerRegistry",
     eventName: "Registered",
-    fromBlock: 0n,
+    fromBlock: 47165937n, // contract deploy block
     watch: true,
   });
 
   const { data: deregisteredEvents } = useScaffoldEventHistory({
     contractName: "IndexerRegistry",
     eventName: "Deregistered",
-    fromBlock: 0n,
+    fromBlock: 47165937n, // contract deploy block
     watch: true,
   });
 

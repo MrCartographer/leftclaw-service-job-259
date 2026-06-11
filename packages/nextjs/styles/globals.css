@@ -13,53 +13,54 @@
     dark --prefersdark;
 }
 
+/* Monochrome SF-fintech theme — matches CLAWD Answers (indexer-server/public/index.html) */
 @plugin "daisyui/theme" {
   name: "light";
 
-  --color-primary: #93bbfb;
-  --color-primary-content: #212638;
-  --color-secondary: #dae8ff;
-  --color-secondary-content: #212638;
-  --color-accent: #93bbfb;
-  --color-accent-content: #212638;
-  --color-neutral: #212638;
+  --color-primary: #09090b;
+  --color-primary-content: #ffffff;
+  --color-secondary: #f4f4f5;
+  --color-secondary-content: #09090b;
+  --color-accent: #09090b;
+  --color-accent-content: #ffffff;
+  --color-neutral: #09090b;
   --color-neutral-content: #ffffff;
   --color-base-100: #ffffff;
-  --color-base-200: #f4f8ff;
-  --color-base-300: #dae8ff;
-  --color-base-content: #212638;
-  --color-info: #93bbfb;
-  --color-success: #34eeb6;
-  --color-warning: #ffcf72;
-  --color-error: #ff8863;
+  --color-base-200: #fafafa;
+  --color-base-300: #e4e4e7;
+  --color-base-content: #09090b;
+  --color-info: #71717a;
+  --color-success: #09090b;
+  --color-warning: #71717a;
+  --color-error: #dc2626;
 
   --radius-field: 0.5rem;
-  --radius-box: 1rem;
+  --radius-box: 0.625rem;
   --tt-tailw: 6px;
 }
 
 @plugin "daisyui/theme" {
   name: "dark";
 
-  --color-primary: #212638;
-  --color-primary-content: #f9fbff;
-  --color-secondary: #323f61;
-  --color-secondary-content: #f9fbff;
-  --color-accent: #4969a6;
-  --color-accent-content: #f9fbff;
-  --color-neutral: #f9fbff;
-  --color-neutral-content: #385183;
-  --color-base-100: #385183;
-  --color-base-200: #2a3655;
-  --color-base-300: #212638;
-  --color-base-content: #f9fbff;
-  --color-info: #385183;
-  --color-success: #34eeb6;
-  --color-warning: #ffcf72;
-  --color-error: #ff8863;
+  --color-primary: #fafafa;
+  --color-primary-content: #09090b;
+  --color-secondary: #18181b;
+  --color-secondary-content: #fafafa;
+  --color-accent: #fafafa;
+  --color-accent-content: #09090b;
+  --color-neutral: #fafafa;
+  --color-neutral-content: #09090b;
+  --color-base-100: #09090b;
+  --color-base-200: #111113;
+  --color-base-300: #27272a;
+  --color-base-content: #fafafa;
+  --color-info: #a1a1aa;
+  --color-success: #fafafa;
+  --color-warning: #a1a1aa;
+  --color-error: #ef4444;
 
   --radius-field: 0.5rem;
-  --radius-box: 1rem;
+  --radius-box: 0.625rem;
 
   --tt-tailw: 6px;
   --tt-bg: var(--color-primary);
@@ -105,8 +106,8 @@
 }
 
 .btn {
-  @apply shadow-md;
-  border-radius: 9999rem;
+  @apply shadow-none;
+  border-radius: 0.5rem;
 }
 
 .btn.btn-ghost {

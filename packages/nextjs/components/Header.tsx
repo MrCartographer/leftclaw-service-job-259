@@ -14,6 +14,7 @@ type HeaderMenuLink = {
 
 export const menuLinks: HeaderMenuLink[] = [
   { label: "Home", href: "/" },
+  { label: "Run an agent", href: "/agents" },
   { label: "Register", href: "/register" },
   { label: "Consumers", href: "/consumers" },
   { label: "Disputes", href: "/disputes" },
@@ -32,8 +33,8 @@ export const HeaderMenuLinks = () => {
               href={href}
               passHref
               className={`${
-                isActive ? "bg-secondary shadow-md" : ""
-              } hover:bg-secondary hover:shadow-md focus:!bg-secondary active:!text-neutral py-1.5 px-3 text-sm rounded-full gap-2 grid grid-flow-col`}
+                isActive ? "bg-secondary font-semibold" : ""
+              } hover:bg-secondary focus:!bg-secondary active:!text-neutral py-1.5 px-3 text-sm rounded-lg gap-2 grid grid-flow-col`}
             >
               <span>{label}</span>
             </Link>
@@ -54,7 +55,7 @@ export const Header = () => {
   });
 
   return (
-    <div className="sticky lg:static top-0 navbar bg-base-100 min-h-0 shrink-0 justify-between z-20 shadow-md shadow-secondary px-0 sm:px-2">
+    <div className="sticky lg:static top-0 navbar bg-base-100 min-h-0 shrink-0 justify-between z-20 border-b border-base-300 px-0 sm:px-2">
       <div className="navbar-start w-auto lg:w-1/2">
         <details className="dropdown" ref={burgerMenuRef}>
           <summary className="ml-1 btn btn-ghost lg:hidden hover:bg-transparent">
@@ -69,13 +70,11 @@ export const Header = () => {
             <HeaderMenuLinks />
           </ul>
         </details>
-        <Link href="/" passHref className="hidden lg:flex items-center gap-2 ml-4 mr-6 shrink-0">
-          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary text-primary-content font-bold">
-            IR
-          </div>
-          <div className="flex flex-col">
-            <span className="font-bold leading-tight">IndexerRegistry</span>
-            <span className="text-xs">Permissionless event index on Base</span>
+        <Link href="/" passHref className="hidden lg:flex items-center gap-2.5 ml-4 mr-6 shrink-0">
+          <div className="w-3 h-3 rounded-xs bg-primary" />
+          <div className="flex items-baseline gap-2">
+            <span className="font-bold leading-tight tracking-tight">IndexerRegistry</span>
+            <span className="text-xs text-base-content/60">· clickable questions on Base</span>
           </div>
         </Link>
         <ul className="hidden lg:flex lg:flex-nowrap menu menu-horizontal px-1 gap-2">

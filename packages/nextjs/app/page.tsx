@@ -32,14 +32,14 @@ const HomeInner = () => {
   const { data: registeredEvents, isLoading: regLoading } = useScaffoldEventHistory({
     contractName: "IndexerRegistry",
     eventName: "Registered",
-    fromBlock: 0n,
+    fromBlock: 47165937n, // contract deploy block
     watch: true,
   });
 
   const { data: deregisteredEvents } = useScaffoldEventHistory({
     contractName: "IndexerRegistry",
     eventName: "Deregistered",
-    fromBlock: 0n,
+    fromBlock: 47165937n, // contract deploy block
     watch: true,
   });
 
@@ -109,9 +109,14 @@ const HomeInner = () => {
 
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-2xl font-bold">Active Registrations</h2>
-        <Link href="/register" className="btn btn-primary btn-sm">
-          Register
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/agents" className="btn btn-sm">
+            Run an agent
+          </Link>
+          <Link href="/register" className="btn btn-primary btn-sm">
+            Register
+          </Link>
+        </div>
       </div>
 
       <div className="card bg-base-100 shadow overflow-x-auto">
