@@ -74,7 +74,6 @@ export const Header = () => {
           <div className="w-3 h-3 rounded-xs bg-primary" />
           <div className="flex items-baseline gap-2">
             <span className="font-bold leading-tight tracking-tight">IndexerRegistry</span>
-            <span className="text-xs text-base-content/60">· clickable questions on Base</span>
           </div>
         </Link>
         <ul className="hidden lg:flex lg:flex-nowrap menu menu-horizontal px-1 gap-2">
