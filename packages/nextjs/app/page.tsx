@@ -31,6 +31,21 @@ function saveCache(rows: CachedRow[]) {
 const truncate = (value: string, head = 8, tail = 6) =>
   value.length > head + tail + 2 ? `${value.slice(0, head)}…${value.slice(-tail)}` : value;
 
+// Logos keyed by lowercase address — target contracts and indexer wallets.
+const TARGET_LOGOS: Record<string, string> = {
+  "0x9f86db9fc6f7c9408e8fda3ff8ce4e78ac7a6b07": "/clawd.jpg", // CLAWD
+  "0x5f09821cbb61e09d2a83124ae0b56aaa3ae85b07": "/dota-logo.jpg", // DOTA
+};
+const INDEXER_LOGOS: Record<string, string> = {
+  "0x287820cbaa25153afdc1a84e73bb1300fdaa1d3c": "/BAYC8781.png",
+};
+
+const AddrLogo = ({ src, alt }: { src?: string; alt: string }) =>
+  src ? (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={src} alt={alt} className="w-6 h-6 rounded-full object-cover" />
+  ) : null;
+
 const AddrLink = ({ address }: { address: string }) => (
   <a
     href={`https://basescan.org/address/${address}`}
@@ -183,15 +198,12 @@ const HomeInner = () => {
                 </td>
               </tr>
             )}
-            {activeRegs.map((r, i) => (
+            {activeRegs.map(r => (
               <tr key={r.regId}>
                 <td className="font-mono text-xs">{truncate(r.regId, 8, 6)}</td>
                 <td>
                   <div className="flex items-center gap-2">
-                    {i === 0 && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src="/clawd.jpg" alt="CLAWD" className="w-6 h-6 rounded-full object-cover" />
-                    )}
+                    <AddrLogo src={TARGET_LOGOS[r.target.toLowerCase()]} alt="Target" />
                     <AddrLink address={r.target} />
                   </div>
                 </td>
@@ -201,10 +213,7 @@ const HomeInner = () => {
                 </td>
                 <td>
                   <div className="flex items-center gap-2">
-                    {i === 0 && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src="/BAYC8781.png" alt="Indexer" className="w-6 h-6 rounded-full object-cover" />
-                    )}
+                    <AddrLogo src={INDEXER_LOGOS[r.indexer.toLowerCase()]} alt="Indexer" />
                     <AddrLink address={r.indexer} />
                   </div>
                 </td>
