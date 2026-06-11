@@ -61,7 +61,7 @@ app.get("/questions", c =>
     feeDisplay: "$0.10",
     payment: paymentRequirements(clawdTransfer.regId, config.questionFee),
     watcher: transferStore.status(),
-    questions: questions.map(q => ({ id: q.id, text: q.text, emoji: q.emoji })),
+    questions: questions.map(q => ({ id: q.id, text: q.text, emoji: q.emoji, category: q.category })),
   }),
 );
 

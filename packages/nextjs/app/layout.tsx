@@ -6,7 +6,7 @@ import "~~/styles/globals.css";
 import { getMetadata } from "~~/utils/scaffold-eth/getMetadata";
 
 export const metadata = getMetadata({
-  title: "IndexerRegistry",
+  title: "Agent Indexer",
   description: "Permissionless event indexer registry where indexers stake USDC to serve on-chain event queries.",
 });
 

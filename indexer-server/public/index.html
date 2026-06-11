@@ -138,6 +138,17 @@
   .answer .links a { color: var(--muted); }
   @keyframes reveal { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
 
+  .category-section { margin-top: 56px; }
+  .category-section:first-child { margin-top: 48px; }
+  .category-label {
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--faint); margin-bottom: 14px;
+  }
+  .category-grid {
+    display: grid; gap: 14px;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  }
+
   .how { margin-top: 96px; }
   .how h2 { font-family: var(--serif); font-size: 1.6rem; margin-bottom: 30px; font-weight: 550; }
   .steps { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
@@ -199,7 +210,7 @@
     <button class="btn" data-approve="50">$5 — 50 questions</button>
   </div>
 
-  <main id="grid" class="grid"></main>
+  <main id="grid"></main>
 
   <section id="how" class="how">
     <h2>How this works</h2>
@@ -285,18 +296,45 @@
   // (e.g. the file opened directly, or the server mid-restart). Kept in sync
   // with src/questions.ts.
   const FALLBACK_QUESTIONS = [
-    { id: "transfers-24h", text: "How many CLAWD transfers happened in the last 24 hours?" },
-    { id: "volume-24h", text: "How much CLAWD volume moved in the last 24 hours?" },
-    { id: "largest-7d", text: "What was the largest single CLAWD transfer this week?" },
-    { id: "unique-senders-7d", text: "How many unique wallets sent CLAWD this week?" },
-    { id: "unique-receivers-7d", text: "How many unique wallets received CLAWD this week?" },
-    { id: "top-sender-7d", text: "Who was the most active CLAWD sender this week?" },
-    { id: "top-receiver-7d", text: "Which wallet received the most CLAWD this week?" },
-    { id: "burned-total", text: "How much CLAWD has been burned, all time?" },
-    { id: "burned-7d", text: "How much CLAWD was burned this week?" },
-    { id: "latest-transfer", text: "When was the most recent CLAWD transfer, and how big?" },
-    { id: "avg-transfer-24h", text: "What's the average CLAWD transfer size today?" },
-    { id: "whales-7d", text: "How many transfers over 1M CLAWD happened this week?" },
+    { id: "transfers-1h",           text: "How many CLAWD transfers happened in the last hour?",                        emoji: "⚡", category: "Pulse" },
+    { id: "volume-1h",              text: "How much CLAWD volume moved in the last hour?",                             emoji: "💧", category: "Pulse" },
+    { id: "transfers-24h",          text: "How many CLAWD transfers happened in the last 24 hours?",                   emoji: "🔁", category: "Pulse" },
+    { id: "volume-24h",             text: "How much CLAWD volume moved in the last 24 hours?",                        emoji: "🌊", category: "Pulse" },
+    { id: "avg-transfer-24h",       text: "What's the average CLAWD transfer size today?",                            emoji: "⚖️", category: "Pulse" },
+    { id: "median-transfer-24h",    text: "What's the median CLAWD transfer size today?",                             emoji: "📊", category: "Pulse" },
+    { id: "latest-transfer",        text: "When was the most recent CLAWD transfer, and how big?",                    emoji: "⏱️", category: "Pulse" },
+    { id: "blocks-since-last",      text: "How many blocks since the last CLAWD transfer?",                           emoji: "🕰️", category: "Pulse" },
+    { id: "last-5-transfers",       text: "What were the last 5 CLAWD transfers?",                                    emoji: "📋", category: "Pulse" },
+    { id: "largest-7d",             text: "What was the largest single CLAWD transfer this week?",                    emoji: "🐋", category: "Weekly" },
+    { id: "smallest-transfer-7d",   text: "What was the smallest CLAWD transfer this week?",                          emoji: "🔬", category: "Weekly" },
+    { id: "unique-senders-7d",      text: "How many unique wallets sent CLAWD this week?",                            emoji: "📤", category: "Weekly" },
+    { id: "unique-receivers-7d",    text: "How many unique wallets received CLAWD this week?",                        emoji: "📥", category: "Weekly" },
+    { id: "top-sender-7d",          text: "Who was the most active CLAWD sender this week?",                          emoji: "🏃", category: "Weekly" },
+    { id: "top-receiver-7d",        text: "Which wallet received the most CLAWD this week?",                          emoji: "🧲", category: "Weekly" },
+    { id: "most-active-wallet-7d",  text: "Which wallet was most active overall this week (sends + receives)?",       emoji: "🌀", category: "Weekly" },
+    { id: "top-net-receiver-7d",    text: "Which wallet accumulated the most CLAWD net this week?",                   emoji: "🏦", category: "Weekly" },
+    { id: "most-diverse-sender-7d", text: "Which wallet sent CLAWD to the most unique addresses this week?",          emoji: "🕸️", category: "Weekly" },
+    { id: "most-diverse-receiver-7d",text:"Which wallet received CLAWD from the most unique addresses this week?",    emoji: "🌐", category: "Weekly" },
+    { id: "volume-today-vs-yesterday",text:"Is CLAWD volume up or down vs yesterday?",                               emoji: "📈", category: "Weekly" },
+    { id: "busiest-day-7d",         text: "Which day had the most CLAWD transfers this week?",                        emoji: "📅", category: "Weekly" },
+    { id: "busiest-hour-7d",        text: "What hour of the day sees the most CLAWD activity this week?",             emoji: "🕐", category: "Weekly" },
+    { id: "whales-1m-7d",           text: "How many transfers over 1M CLAWD happened this week?",                     emoji: "🐳", category: "Whales" },
+    { id: "whales-10m-7d",          text: "How many transfers over 10M CLAWD happened this week?",                    emoji: "🦈", category: "Whales" },
+    { id: "whale-volume-pct-7d",    text: "What % of this week's volume came from transfers over 1M CLAWD?",          emoji: "🥧", category: "Whales" },
+    { id: "micro-transfers-7d",     text: "How many micro-transfers (under 1,000 CLAWD) happened this week?",         emoji: "🦐", category: "Whales" },
+    { id: "burned-total",           text: "How much CLAWD has been burned, all time?",                                emoji: "🔥", category: "Burns" },
+    { id: "burned-24h",             text: "How much CLAWD was burned in the last 24 hours?",                          emoji: "🕯️", category: "Burns" },
+    { id: "burned-7d",              text: "How much CLAWD was burned this week?",                                     emoji: "♨️", category: "Burns" },
+    { id: "burn-pct-7d",            text: "What % of CLAWD transfers this week went to the burn address?",            emoji: "🧯", category: "Burns" },
+    { id: "largest-burn-7d",        text: "What was the largest single CLAWD burn this week?",                        emoji: "💀", category: "Burns" },
+    { id: "top-burner-7d",          text: "Who burned the most CLAWD this week?",                                     emoji: "🏆", category: "Burns" },
+    { id: "burn-wallets-7d",        text: "How many unique wallets burned CLAWD this week?",                          emoji: "🪦", category: "Burns" },
+    { id: "total-transfers-window", text: "How many CLAWD transfers are in the indexed window?",                      emoji: "🗂️", category: "Index" },
+    { id: "total-volume-window",    text: "What is the total CLAWD volume in the indexed window?",                    emoji: "🏔️", category: "Index" },
+    { id: "unique-senders-window",  text: "How many unique wallets have sent CLAWD in the indexed window?",           emoji: "👥", category: "Index" },
+    { id: "unique-receivers-window",text: "How many unique wallets have received CLAWD in the indexed window?",       emoji: "📬", category: "Index" },
+    { id: "longest-gap-7d",         text: "What was the longest gap between CLAWD transfers this week?",              emoji: "⏳", category: "Index" },
+    { id: "zero-days-7d",           text: "How many days in the last 7 had zero CLAWD transfers?",                    emoji: "🌵", category: "Index" },
   ];
 
   // ── Boot: load questions + payment requirements ─────────────────
@@ -345,16 +383,41 @@
 
   function renderCards() {
     grid.innerHTML = "";
-    cfg.questions.forEach((q, i) => {
-      const card = document.createElement("div");
-      card.className = "card";
-      card.dataset.id = q.id;
-      card.innerHTML = `
-        <div class="q"><span class="num">${String(i + 1).padStart(2, "0")}</span><span class="text">${q.text}</span></div>
-        <div class="answer"><div class="big"></div><div class="detail"></div><div class="links"></div></div>
-        <div class="meta"><span class="chip">${cfg.feeDisplay}</span><span class="hint">click to ask</span></div>`;
-      card.addEventListener("click", () => ask(card, q));
-      grid.appendChild(card);
+    // Group questions by category, preserving order of first appearance
+    const categoryOrder = [];
+    const byCategory = {};
+    cfg.questions.forEach(q => {
+      const cat = q.category || "Other";
+      if (!byCategory[cat]) { byCategory[cat] = []; categoryOrder.push(cat); }
+      byCategory[cat].push(q);
+    });
+
+    let globalIndex = 1;
+    categoryOrder.forEach(cat => {
+      const section = document.createElement("div");
+      section.className = "category-section";
+      const label = document.createElement("div");
+      label.className = "category-label";
+      label.textContent = cat;
+      section.appendChild(label);
+
+      const catGrid = document.createElement("div");
+      catGrid.className = "category-grid";
+
+      byCategory[cat].forEach(q => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.dataset.id = q.id;
+        card.innerHTML = `
+          <div class="q"><span class="num">${String(globalIndex++).padStart(2, "0")}</span><span class="text">${q.emoji ? q.emoji + " " : ""}${q.text}</span></div>
+          <div class="answer"><div class="big"></div><div class="detail"></div><div class="links"></div></div>
+          <div class="meta"><span class="chip">${cfg.feeDisplay}</span><span class="hint">click to ask</span></div>`;
+        card.addEventListener("click", () => ask(card, q));
+        catGrid.appendChild(card);
+      });
+
+      section.appendChild(catGrid);
+      grid.appendChild(section);
     });
   }
 

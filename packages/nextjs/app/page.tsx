@@ -1,16 +1,46 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import type { NextPage } from "next";
 import { formatUnits } from "viem";
 import { useAccount } from "wagmi";
 import { ClientOnly } from "~~/components/ClientOnly";
-import { Address } from "~~/components/scaffold-eth";
 import { useScaffoldEventHistory, useScaffoldReadContract } from "~~/hooks/scaffold-eth";
+
+const CACHE_KEY = "indexer-registry-regs-v1";
+
+type CachedRow = { regId: string; indexer: string; target: string; eventSig: string; boost: string };
+
+function loadCache(): CachedRow[] {
+  try {
+    return JSON.parse(localStorage.getItem(CACHE_KEY) ?? "[]");
+  } catch {
+    return [];
+  }
+}
+
+function saveCache(rows: CachedRow[]) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(rows));
+  } catch {
+    // ignore
+  }
+}
 
 const truncate = (value: string, head = 8, tail = 6) =>
   value.length > head + tail + 2 ? `${value.slice(0, head)}…${value.slice(-tail)}` : value;
+
+const AddrLink = ({ address }: { address: string }) => (
+  <a
+    href={`https://basescan.org/address/${address}`}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="font-mono text-xs hover:underline"
+  >
+    {truncate(address, 6, 4)}
+  </a>
+);
 
 const formatUSDC = (raw?: bigint) => {
   if (raw === undefined) return "$0.00";
@@ -28,6 +58,12 @@ type RegRow = {
 
 const HomeInner = () => {
   const { address: connectedAddress } = useAccount();
+
+  const [cachedRegs, setCachedRegs] = useState<CachedRow[]>([]);
+
+  useEffect(() => {
+    setCachedRegs(loadCache());
+  }, []);
 
   const { data: registeredEvents, isLoading: regLoading } = useScaffoldEventHistory({
     contractName: "IndexerRegistry",
@@ -58,7 +94,12 @@ const HomeInner = () => {
   }, [deregisteredEvents]);
 
   const activeRegs: RegRow[] = useMemo(() => {
-    if (!registeredEvents) return [];
+    // While events are loading, show cached data immediately
+    if (!registeredEvents) {
+      return cachedRegs
+        .filter(r => !deregisteredSet.has(r.regId.toLowerCase()))
+        .map(r => ({ ...r, boost: BigInt(r.boost) }));
+    }
     const rows: RegRow[] = [];
     for (const ev of registeredEvents) {
       const args = ev.args as {
@@ -77,6 +118,8 @@ const HomeInner = () => {
         boost: args.boost ?? 0n,
       });
     }
+    // Persist to cache for next visit
+    saveCache(rows.map(r => ({ ...r, boost: r.boost.toString() })));
     return rows;
   }, [registeredEvents, deregisteredSet]);
 
@@ -93,7 +136,9 @@ const HomeInner = () => {
         <div className="stat">
           <div className="stat-title">Active Registrations</div>
           <div className="stat-value text-primary">{activeRegs.length}</div>
-          <div className="stat-desc">{regLoading ? "Loading events..." : "Live from Registered events"}</div>
+          <div className="stat-desc">
+            {regLoading && activeRegs.length === 0 ? "Loading events..." : "Live from Registered events"}
+          </div>
         </div>
         <div className="stat">
           <div className="stat-title">Total Boost Staked</div>
@@ -134,22 +179,34 @@ const HomeInner = () => {
             {activeRegs.length === 0 && (
               <tr>
                 <td colSpan={5} className="text-center text-base-content/60 py-8">
-                  {regLoading ? "Loading registrations..." : "No active registrations yet."}
+                  {regLoading && cachedRegs.length === 0 ? "Loading registrations..." : "No active registrations yet."}
                 </td>
               </tr>
             )}
-            {activeRegs.map(r => (
+            {activeRegs.map((r, i) => (
               <tr key={r.regId}>
                 <td className="font-mono text-xs">{truncate(r.regId, 8, 6)}</td>
                 <td>
-                  <Address address={r.target as `0x${string}`} format="short" size="sm" />
+                  <div className="flex items-center gap-2">
+                    {i === 0 && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src="/clawd.jpg" alt="CLAWD" className="w-6 h-6 rounded-full object-cover" />
+                    )}
+                    <AddrLink address={r.target} />
+                  </div>
                 </td>
                 <td className="font-mono text-xs">{truncate(r.eventSig, 10, 6)}</td>
                 <td>
                   <span className="badge badge-ghost">{formatUSDC(r.boost)}</span>
                 </td>
                 <td>
-                  <Address address={r.indexer as `0x${string}`} format="short" size="sm" />
+                  <div className="flex items-center gap-2">
+                    {i === 0 && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src="/BAYC8781.png" alt="Indexer" className="w-6 h-6 rounded-full object-cover" />
+                    )}
+                    <AddrLink address={r.indexer} />
+                  </div>
                 </td>
               </tr>
             ))}
@@ -186,7 +243,7 @@ const HomeInner = () => {
                   <tr key={r.regId}>
                     <td className="font-mono text-xs">{truncate(r.regId, 8, 6)}</td>
                     <td>
-                      <Address address={r.target as `0x${string}`} format="short" size="sm" />
+                      <AddrLink address={r.target} />
                     </td>
                     <td className="font-mono text-xs">{truncate(r.eventSig, 10, 6)}</td>
                     <td>
@@ -208,10 +265,11 @@ const Home: NextPage = () => {
     <div className="flex flex-col grow w-full">
       <div className="px-4 lg:px-8 py-10 max-w-7xl mx-auto w-full">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2">IndexerRegistry</h1>
+          <h1 className="text-3xl font-bold mb-2">Agent Indexer</h1>
           <p className="text-base-content/70">
-            Permissionless event indexers on Base. Indexers stake USDC to register{" "}
-            <code className="text-sm">(targetContract, eventSig)</code> pairs and serve queries.
+            Permissionless event indexers on Base, powered by the <code className="text-sm">IndexerRegistry</code> smart
+            contract. Indexers stake USDC to register <code className="text-sm">(targetContract, eventSig)</code> pairs
+            and serve queries.
           </p>
         </div>
         <ClientOnly fallback={<div className="skeleton h-32 w-full" />}>
