@@ -5,33 +5,9 @@ import Link from "next/link";
 import type { NextPage } from "next";
 
 const CONTRACT = "0x3be578A72d1c4ffDBB2AA2418a7fb749BCDBA313";
-const REFERENCE_REPO = "https://github.com/MrCartographer/leftclaw-service-job-259";
+const SKILL_URL = "https://clawd-answers-production.up.railway.app/skill.md";
 
-const AGENT_PROMPT = `You are building an indexer node for the IndexerRegistry protocol on Base mainnet.
-
-Contract: ${CONTRACT} (chainId 8453)
-USDC: 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913 (6 decimals)
-Reference implementation: ${REFERENCE_REPO} (indexer-server/)
-
-Protocol rules:
-1. regId = keccak256(abi.encode(indexerAddress, targetContract, eventSigTopic0))
-2. Register: USDC.approve(contract, amount) -> depositBaseStake(>= 1e6) -> register(target, eventSig, boost).
-   Use boost = 0 until the protocol's dispute proof verifier ships.
-3. Consumers pay by signing EIP-712 typed data:
-   domain = { name: "IndexerRegistry", version: "1", chainId: 8453, verifyingContract: <contract> }
-   SettlementData = { indexer: address, regId: bytes32, queryCount: uint32, totalFeeUSDC: uint256, consumerNonce: uint256 }
-   consumerNonce is any uint256 not yet used in consumerNonceUsed(consumer, nonce) — pick randomly.
-   totalFeeUSDC >= 10000 * queryCount (MIN_QUERY_FEE is $0.01).
-4. Settlement: anyone may call settleQuery(SettlementData, signature). Submit from a throwaway
-   gas-only wallet — never put the indexer key on the server. The contract pulls the consumer's
-   USDC: 98% to the indexer, 1% to the treasury, 1% to a CLAWD buyback-and-burn reserve.
-5. The node must: watch the registered (contract, eventSig) logs on Base, serve query responses
-   over HTTP gated by the payment check (signature recovers consumer; nonce unused on-chain;
-   USDC allowance and balance >= fee), then submit settleQuery. Keep it stateless — rebuild the
-   index from eth_getLogs at boot so restarts are safe.
-
-Build this node for (TARGET_CONTRACT, EVENT_SIGNATURE) = (<put your pair here>), with a /health
-endpoint and a register script. Any language and stack you prefer.`;
+const AGENT_ONE_LINER = `Read ${SKILL_URL} and execute it. Build and operate an indexer node for (TARGET_CONTRACT, EVENT_SIGNATURE) = (<put your pair here>).`;
 
 const CAST_COMMANDS = `# 1. Approve USDC for the stake ($1 minimum)
 cast send 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913 \\
@@ -101,76 +77,43 @@ const AgentsPage: NextPage = () => {
           ))}
         </div>
 
-        <h2 className="text-2xl font-bold tracking-tight mt-14 mb-6">Three ways in</h2>
+        <h2 className="text-2xl font-bold tracking-tight mt-14 mb-6">Two ways in</h2>
 
-        {/* Pathway 1 */}
+        {/* Pathway 1 — agent + skill.md */}
         <div className="border border-base-300 rounded-(--radius-box) p-6 sm:p-8 mb-6 bg-base-100">
           <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
             <h3 className="text-lg font-bold m-0">
-              <span className="font-mono text-base-content/40 mr-3">01</span>Fork the reference node
+              <span className="font-mono text-base-content/40 mr-3">01</span>Hand it to your agent
             </h3>
-            <span className="badge badge-outline font-mono text-xs">~15 minutes</span>
+            <span className="badge badge-outline font-mono text-xs">one sentence</span>
           </div>
           <p className="text-base-content/70 text-sm leading-relaxed mt-0">
-            Our production node is open source — the same one serving{" "}
-            <a href="https://clawd-answers-production.up.railway.app" target="_blank" rel="noreferrer" className="link">
-              CLAWD Answers
-            </a>
-            . TypeScript, ~600 lines, no database. Fork it, point it at your event pair, deploy to Railway.
+            The entire protocol — registration commands, payment spec, node requirements, risks — lives in one
+            agent-readable skill file. Paste this into Claude Code, Cursor, or whatever agent you run, swap in your
+            target pair, and let it work:
           </p>
-          <ol className="text-sm text-base-content/70 leading-7 list-decimal list-inside my-3">
-            <li>
-              Fork{" "}
-              <a href={REFERENCE_REPO} target="_blank" rel="noreferrer" className="link font-mono text-xs">
-                {REFERENCE_REPO.replace("https://github.com/", "")}
-              </a>{" "}
-              → <span className="font-mono text-xs">indexer-server/</span>
-            </li>
-            <li>
-              Edit <span className="font-mono text-xs">src/abi.ts</span> (your event) and{" "}
-              <span className="font-mono text-xs">src/questions.ts</span> (what you sell)
-            </li>
-            <li>
-              <span className="font-mono text-xs">cp .env.example .env</span> →{" "}
-              <span className="font-mono text-xs">npm run register</span> (stakes $1, registers your pair)
-            </li>
-            <li>
-              Deploy: Railway → root directory <span className="font-mono text-xs">indexer-server</span> → set env vars
-              → done
-            </li>
-          </ol>
-          <a className="btn btn-primary btn-sm" href={REFERENCE_REPO} target="_blank" rel="noreferrer">
-            Open the reference repo
+          <div className="relative mt-4 mb-3">
+            <div className="absolute right-3 top-3 z-10">
+              <CopyButton text={AGENT_ONE_LINER} />
+            </div>
+            <pre className="bg-base-200 border border-base-300 rounded-(--radius-box) p-4 pr-20 text-xs leading-relaxed overflow-x-auto whitespace-pre-wrap">
+              {AGENT_ONE_LINER}
+            </pre>
+          </div>
+          <p className="text-base-content/60 text-xs leading-relaxed mb-3">
+            The skill file includes a live production node to crib request/response shapes from. Prefer to read it
+            yourself first?
+          </p>
+          <a className="btn btn-primary btn-sm" href={SKILL_URL} target="_blank" rel="noreferrer">
+            View skill.md
           </a>
         </div>
 
-        {/* Pathway 2 */}
+        {/* Pathway 2 — raw */}
         <div className="border border-base-300 rounded-(--radius-box) p-6 sm:p-8 mb-6 bg-base-100">
           <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
             <h3 className="text-lg font-bold m-0">
-              <span className="font-mono text-base-content/40 mr-3">02</span>Let your AI build it
-            </h3>
-            <span className="badge badge-outline font-mono text-xs">any stack</span>
-          </div>
-          <p className="text-base-content/70 text-sm leading-relaxed mt-0">
-            Paste this prompt into Claude Code, Cursor, or whatever agent you run. It contains the complete protocol
-            spec — your agent fills in the stack. Swap in your target contract and event before sending.
-          </p>
-          <div className="relative mt-4">
-            <div className="absolute right-3 top-3 z-10">
-              <CopyButton text={AGENT_PROMPT} />
-            </div>
-            <pre className="bg-base-200 border border-base-300 rounded-(--radius-box) p-4 text-xs leading-relaxed overflow-x-auto whitespace-pre-wrap max-h-80 overflow-y-auto">
-              {AGENT_PROMPT}
-            </pre>
-          </div>
-        </div>
-
-        {/* Pathway 3 */}
-        <div className="border border-base-300 rounded-(--radius-box) p-6 sm:p-8 mb-6 bg-base-100">
-          <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
-            <h3 className="text-lg font-bold m-0">
-              <span className="font-mono text-base-content/40 mr-3">03</span>Raw contract, your infra
+              <span className="font-mono text-base-content/40 mr-3">02</span>Raw contract, your infra
             </h3>
             <span className="badge badge-outline font-mono text-xs">cast + anything</span>
           </div>
@@ -189,7 +132,11 @@ const AgentsPage: NextPage = () => {
           <p className="text-base-content/60 text-xs leading-relaxed mb-0">
             Then gate your HTTP responses on the consumer&apos;s signed{" "}
             <span className="font-mono">SettlementData</span> and submit <span className="font-mono">settleQuery</span>{" "}
-            from a gas-only wallet — full struct and domain are in the prompt above, or use the{" "}
+            from a gas-only wallet — the full struct and domain are in{" "}
+            <a href={SKILL_URL} target="_blank" rel="noreferrer" className="link">
+              skill.md
+            </a>
+            , or use the{" "}
             <Link href="/register" className="link">
               Register
             </Link>{" "}
@@ -205,16 +152,7 @@ const AgentsPage: NextPage = () => {
             deployed, so an indexer cannot currently win a dispute by revealing a proof — any dispute resolves for the
             disputer after ~24h. Until it ships: <strong>register with zero boost</strong>, treat your $1 base stake as
             at-risk (max loss 20% per dispute), and keep your endpoint alive — a dead endpoint on a live registration is
-            disputable. Track status in{" "}
-            <a
-              href={`${REFERENCE_REPO}/blob/clawd-answers/NEXT_STEPS.md`}
-              target="_blank"
-              rel="noreferrer"
-              className="link"
-            >
-              NEXT_STEPS.md
-            </a>
-            .
+            disputable.
           </p>
         </div>
 
