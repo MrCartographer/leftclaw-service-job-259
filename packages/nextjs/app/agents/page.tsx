@@ -5,7 +5,7 @@ import Link from "next/link";
 import type { NextPage } from "next";
 
 const CONTRACT = "0x3be578A72d1c4ffDBB2AA2418a7fb749BCDBA313";
-const SKILL_URL = "https://clawd-answers-production.up.railway.app/skill.md";
+const SKILL_URL = "https://agent-indexer.vercel.app/skill.md";
 
 const AGENT_ONE_LINER = `Read ${SKILL_URL} and execute it. Build and operate an indexer node for (TARGET_CONTRACT, EVENT_SIGNATURE) = (<put your pair here>).`;
 

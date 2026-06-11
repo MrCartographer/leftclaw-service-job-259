@@ -24,10 +24,9 @@ const clawdTransfer = registrations[0];
 // ── Clickable Questions page ─────────────────────────────────────────
 app.get("/", c => c.html(indexHtml));
 
-// Agent-readable skill file: "read this and become an indexer".
-const serveSkill = (c: any) => c.text(skillMd, 200, { "content-type": "text/markdown; charset=utf-8" });
-app.get("/skill.md", serveSkill);
-app.get("/agents/skill.md", serveSkill);
+// Agent-readable skill file: "you have a live index — market it like this".
+// (The become-an-indexer skill lives at agent-indexer.vercel.app/skill.md.)
+app.get("/skill.md", c => c.text(skillMd, 200, { "content-type": "text/markdown; charset=utf-8" }));
 
 app.get("/health", c => c.json({ ok: true, watcher: transferStore.status() }));
 
