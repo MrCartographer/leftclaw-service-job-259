@@ -33,6 +33,49 @@
     --invert-bg: #f5f1ec;
     --invert-text: #161311;
   }
+  /* DOTA skin — matches defenseoftheagents.com (navy + WoW gold). Activated
+     via JS when the server reports token.symbol === "DOTA". Placed after the
+     dark block so it wins regardless of the light/dark toggle. */
+  @font-face {
+    font-family: "Friz Quadrata";
+    src: url("https://www.defenseoftheagents.com/fonts/FRIZQT__.TTF") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  [data-skin="dota"] {
+    --bg: #0a0e2a;
+    --surface: #111a3d;
+    --surface-2: #1a2a4c;
+    --border: #1a2a4c;
+    --border-strong: #cca300;
+    --text: #e8dcc8;
+    --muted: #a9a293;
+    --faint: #6b7080;
+    --invert-bg: #fcd312;
+    --invert-text: #0a0e2a;
+    --serif: "Friz Quadrata", "Palatino Linotype", Palatino, serif;
+  }
+  [data-skin="dota"] .hero h1,
+  [data-skin="dota"] .how h2 { color: #fcd312; }
+  [data-skin="dota"] .brand { color: #fcd312; font-family: var(--serif); }
+  [data-skin="dota"] .brand .mark { background: #fcd312; }
+  [data-skin="dota"] .category-label { color: #cca300; }
+  [data-skin="dota"] .step h3 { color: #fcd312; font-family: var(--serif); }
+  [data-skin="dota"] .btn.primary {
+    background: linear-gradient(180deg, #fcd312 0%, #cca300 100%);
+    border-color: #cca300;
+    color: #0a0e2a;
+  }
+  [data-skin="dota"] .btn.primary:hover { background: linear-gradient(180deg, #ffe149 0%, #d6ac00 100%); opacity: 1; }
+  [data-skin="dota"] .dot.live { background: #fcd312; }
+  [data-skin="dota"] code { color: #ffcc88; }
+  [data-skin="dota"] a { color: #66aaff; text-decoration-color: rgba(102, 170, 255, 0.4); }
+  [data-skin="dota"] a:hover { text-decoration-color: #66aaff; }
+  [data-skin="dota"] .card.answered { outline-color: #cca300; }
+  [data-skin="dota"] .answer .big { color: #fcd312; }
+  [data-skin="dota"] .chip { background: rgba(252, 211, 18, 0.1); color: #fcd312; }
+  [data-skin="dota"] #themeBtn { display: none; }
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   body {
@@ -354,6 +397,7 @@
       $("brandName").textContent = `${sym} Answers`;
       document.querySelectorAll(".tokenSym").forEach(el => (el.textContent = `$${sym}`));
       document.querySelectorAll(".tokenSymPlain").forEach(el => (el.textContent = sym));
+      if (sym === "DOTA") document.documentElement.dataset.skin = "dota";
     }
     $("contractAddr").textContent = shorten(cfg.payment.payTo);
     $("contractLink").href = "https://basescan.org/address/" + cfg.payment.payTo;
